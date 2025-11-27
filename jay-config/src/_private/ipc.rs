@@ -805,6 +805,13 @@ pub enum ClientMessage<'a> {
         show: bool,
     },
     GetShowTitles,
+    GetWorkspaceConnector {
+        workspace: Workspace,
+    },
+    GetConnectorInDirection {
+        connector: Connector,
+        direction: Direction,
+    },
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -967,6 +974,12 @@ pub enum Response {
     },
     GetConnectorWorkspaces {
         workspaces: Vec<Workspace>,
+    },
+    GetWorkspaceConnector {
+        connector: Connector,
+    },
+    GetConnectorInDirection {
+        connector: Connector,
     },
     GetClients {
         clients: Vec<Client>,

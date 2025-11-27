@@ -21,6 +21,10 @@ pub enum OutputMatchParserError {
     Expected(#[from] UnexpectedDataType),
     #[error(transparent)]
     Extract(#[from] ExtractorError),
+    #[error("Unknown direction {0}")]
+    UnknownDirection(String),
+    #[error("Exactly one of `output` or `direction` must be specified")]
+    OutputAndDirectionMutuallyExclusive,
 }
 
 pub struct OutputMatchParser<'a>(pub &'a Context<'a>);

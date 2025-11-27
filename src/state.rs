@@ -1560,6 +1560,72 @@ impl State {
         }
     }
 
+    pub fn find_connector_in_direction(
+        &self,
+        source_connector_id: ConnectorId,
+        direction: jay_config::Direction,
+    ) -> Option<ConnectorId> {
+        let outputs = self.root.outputs.lock();
+        let source_output = outputs
+            .values()
+            .find(|o| o.global.connector.id == source_connector_id)?;
+
+        let ref_box = source_output.global.pos.get();
+        let ref_x = ref_box.x1();
+        let ref_y = ref_box.y1();
+        let ref_width = ref_box.width();
+        let ref_height = ref_box.height();
+
+        // Use the center of the source output as the reference point (like wlroots)
+        let ref_lx = ref_x + ref_width / 2;
+        let ref_ly = ref_y + ref_height / 2;
+
+        // Find the closest output in the given direction using wlroots-style algorithm
+        let mut min_distance = i64::MAX;
+        let mut closest_output: Option<ConnectorId> = None;
+
+        for output in outputs.values() {
+            if output.global.connector.id == source_connector_id {
+                continue;
+            }
+
+            let box_pos = output.global.pos.get();
+            let box_x = box_pos.x1();
+            let box_y = box_pos.y1();
+            let box_width = box_pos.width();
+            let box_height = box_pos.height();
+
+            // Edge-based direction check (like wlroots)
+            // Test to make sure this output is in the given direction
+            let is_in_direction = match direction {
+                jay_config::Direction::Left => box_x + box_width <= ref_x,
+                jay_config::Direction::Right => box_x >= ref_x + ref_width,
+                jay_config::Direction::Up => box_y + box_height <= ref_y,
+                jay_config::Direction::Down => box_y >= ref_y + ref_height,
+            };
+
+            if !is_in_direction {
+                continue;
+            }
+
+            // Calculate distance from reference point to closest point on this output
+            // This mimics wlr_box_closest_point + squared Euclidean distance
+            let closest_x = ref_lx.clamp(box_x, box_x + box_width);
+            let closest_y = ref_ly.clamp(box_y, box_y + box_height);
+
+            let dx = (closest_x - ref_lx) as i64;
+            let dy = (closest_y - ref_ly) as i64;
+            let distance = dx * dx + dy * dy;
+
+            if distance < min_distance {
+                min_distance = distance;
+                closest_output = Some(output.global.connector.id);
+            }
+        }
+
+        closest_output
+    }
+
     pub fn node_at(&self, x: i32, y: i32) -> FoundNode {
         let mut found_tree = self.node_at_tree.borrow_mut();
         found_tree.push(FoundNode {
