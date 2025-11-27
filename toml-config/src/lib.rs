@@ -1617,6 +1617,9 @@ fn load_config(initial_load: bool, auto_reload: bool, persistent: &Rc<Persistent
             persistent.seat.set_simple_im_enabled(enabled);
         }
     }
+    if let Some(mouse_refocus) = config.mouse_refocus {
+        persistent.seat.set_mouse_refocus(mouse_refocus);
+    }
 }
 
 fn create_command(exec: &Exec) -> Command {
