@@ -1753,6 +1753,21 @@ Input:
           [[inputs]]
           calibration-matrix = [[0, 1, 0], [-1, 0, 1]]
           ```
+    numlock-on-startup:
+      kind: boolean
+      required: false
+      description: |
+        Enables numlock on this keyboard when it's connected.
+
+        This only has an effect on keyboard devices.
+
+        - Example: To enable numlock on all keyboards:
+
+          ```toml
+          [[inputs]]
+          match.is-keyboard = true
+          numlock-on-startup = true
+          ```
 
 
 AccelProfile:

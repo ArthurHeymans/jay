@@ -182,6 +182,14 @@ impl InputDevice {
     }
 }
 
+/// Sets numlock state for a keyboard device.
+///
+/// This will enable or disable the numlock LED and modifier state.
+/// This is typically called automatically based on configuration when a keyboard is connected.
+pub fn set_numlock_enabled(device: InputDevice, enabled: bool) {
+    get!().set_input_numlock_enabled(device, enabled);
+}
+
 /// A direction in a timeline.
 #[derive(Serialize, Deserialize, Copy, Clone, Debug, Hash, Eq, PartialEq)]
 pub enum Timeline {

@@ -716,6 +716,12 @@ impl Input {
         if let Some(v) = self.middle_button_emulation {
             c.set_middle_button_emulation_enabled(v);
         }
+        if let Some(v) = self.numlock_on_startup
+            && c.has_capability(jay_config::input::capability::CAP_KEYBOARD)
+        {
+            use jay_config::input::set_numlock_enabled;
+            set_numlock_enabled(c, v);
+        }
     }
 }
 
@@ -1523,9 +1529,10 @@ fn load_config(initial_load: bool, auto_reload: bool, persistent: &Rc<Persistent
     on_new_input_device({
         let state = state.clone();
         let switch_actions = switch_actions.clone();
+        let inputs = config.inputs.clone();
         move |c| {
             state.add_io_input(c);
-            for input in &config.inputs {
+            for input in &inputs {
                 if input.match_.matches(c, &state) {
                     input.apply(c, &state);
                 }
@@ -1544,6 +1551,11 @@ fn load_config(initial_load: bool, auto_reload: bool, persistent: &Rc<Persistent
     }
     for c in jay_config::input::input_devices() {
         state.add_io_input(c);
+        for input in &config.inputs {
+            if input.match_.matches(c, &state) {
+                input.apply(c, &state);
+            }
+        }
         state.map_input_to_output(c);
         state.handle_switch_device(c, &switch_actions);
     }

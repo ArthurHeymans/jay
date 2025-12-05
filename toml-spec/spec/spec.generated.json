@@ -1493,6 +1493,10 @@
               "description": ""
             }
           }
+        },
+        "numlock-on-startup": {
+          "type": "boolean",
+          "description": "Enables numlock on this keyboard when it's connected.\n\nThis only has an effect on keyboard devices.\n\n- Example: To enable numlock on all keyboards:\n\n  ```toml\n  [[inputs]]\n  match.is-keyboard = true\n  numlock-on-startup = true\n  ```\n"
         }
       },
       "required": [

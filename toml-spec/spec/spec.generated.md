@@ -3215,6 +3215,22 @@ The table has the following fields:
 
   The value of this field should be an array of arrays of numbers.
 
+- `numlock-on-startup` (optional):
+
+  Enables numlock on this keyboard when it's connected.
+  
+  This only has an effect on keyboard devices.
+  
+  - Example: To enable numlock on all keyboards:
+  
+    ```toml
+    [[inputs]]
+    match.is-keyboard = true
+    numlock-on-startup = true
+    ```
+
+  The value of this field should be a boolean.
+
 
 <a name="types-InputMatch"></a>
 ### `InputMatch`

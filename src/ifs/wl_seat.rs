@@ -1395,6 +1395,10 @@ impl WlSeatGlobal {
         self.seat_kb_state.get()
     }
 
+    pub fn seat_kb_state_cell(&self) -> Rc<RefCell<KbvmState>> {
+        self.seat_kb_state.get()
+    }
+
     pub fn latest_kb_state(&self) -> Rc<dyn DynKeyboardState> {
         self.latest_kb_state.get()
     }

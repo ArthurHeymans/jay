@@ -878,6 +878,64 @@ impl ConfigProxyHandler {
         Ok(())
     }
 
+    fn handle_set_numlock_enabled(
+        &self,
+        device: InputDevice,
+        enabled: bool,
+    ) -> Result<(), CphError> {
+        use crate::backend::{InputDeviceCapability, LED_NUM_LOCK};
+        use kbvm::{Keycode, state_machine::Direction};
+
+        let dev = self.get_device_handler_data(device)?;
+        if !dev.device.has_capability(InputDeviceCapability::Keyboard) {
+            return Ok(());
+        }
+        if let Some(seat) = dev.seat.get() {
+            let state_cell = seat.seat_kb_state_cell();
+            let state = state_cell.borrow();
+            let current_led_state = state.kb_state.leds;
+            let is_currently_enabled = current_led_state.contains(LED_NUM_LOCK);
+            drop(state);
+
+            // Only toggle if the current state differs from desired state
+            if is_currently_enabled != enabled {
+                // Simulate a numlock key press and release to toggle the state
+                // Numlock is keycode 69 in evdev
+                let numlock_key = Keycode::from_evdev(69);
+                let mut state = state_cell.borrow_mut();
+                let mut events = Vec::new();
+
+                // Clone the Rc<KbvmMap> to avoid borrow checker issues
+                let map = state.map.clone();
+
+                // Press numlock
+                map.state_machine.handle_key(
+                    &mut state.state,
+                    &mut events,
+                    numlock_key,
+                    Direction::Down,
+                );
+
+                // Release numlock
+                map.state_machine.handle_key(
+                    &mut state.state,
+                    &mut events,
+                    numlock_key,
+                    Direction::Up,
+                );
+
+                // Apply the events to update the keyboard state
+                for event in events {
+                    state.kb_state.apply_event(event);
+                }
+
+                // Update LEDs on the device
+                dev.device.set_enabled_leds(state.kb_state.leds);
+            }
+        }
+        Ok(())
+    }
+
     fn handle_set_ei_socket_enabled(&self, enabled: bool) {
         self.state.enable_ei_acceptor.set(enabled);
         self.state.update_ei_acceptor();
@@ -3251,6 +3309,9 @@ impl ConfigProxyHandler {
             ClientMessage::SetMiddleButtonEmulationEnabled { device, enabled } => self
                 .handle_set_middle_button_emulation_enabled(device, enabled)
                 .wrn("set_middle_button_emulation_enabled")?,
+            ClientMessage::SetNumlockEnabled { device, enabled } => self
+                .handle_set_numlock_enabled(device, enabled)
+                .wrn("set_numlock_enabled")?,
             ClientMessage::GetContentType { window } => self
                 .handle_get_content_type(window)
                 .wrn("get_content_type")?,

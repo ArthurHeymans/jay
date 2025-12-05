@@ -720,6 +720,10 @@ pub enum ClientMessage<'a> {
         device: InputDevice,
         enabled: bool,
     },
+    SetNumlockEnabled {
+        device: InputDevice,
+        enabled: bool,
+    },
     GetContentType {
         window: Window,
     },

@@ -1314,6 +1314,10 @@ impl ConfigClient {
         self.send(&ClientMessage::SetMiddleButtonEmulationEnabled { device, enabled })
     }
 
+    pub fn set_input_numlock_enabled(&self, device: InputDevice, enabled: bool) {
+        self.send(&ClientMessage::SetNumlockEnabled { device, enabled })
+    }
+
     pub fn device_name(&self, device: InputDevice) -> String {
         let res = self.send_with_response(&ClientMessage::GetDeviceName { device });
         get_response!(res, String::new(), GetDeviceName { name });
